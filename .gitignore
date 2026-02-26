@@ -1,0 +1,8 @@
+__pycache__/
+venv
+*.sqlite3
+*.db
+.vscode/
+.idea/
+.ipynb_checkpoints/
+.env
