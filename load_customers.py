@@ -33,7 +33,6 @@ try:
         )
 
         db.add(customer)
-
     db.commit()
     print("Customers inserted successfully!")
 
