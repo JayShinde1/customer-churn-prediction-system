@@ -39,35 +39,17 @@ class InputData(BaseModel):
     TotalCharges: float
 
 
-@app.post('/predict/{customer_id}', status_code = status.HTTP_201_CREATED)
-def predict_churn(customer_id: str, db: db_dependency, user_input: InputData):
-    customer = db.query(Customer).filter(Customer.customerID == customer_id).first()
-
-    if not customer:
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = "Customer ID not found.")
-
-    customer_dict = {column.name: getattr(customer, column.name) 
-                     for column in Customer.__table__.columns}
-
-    df = pd.DataFrame([customer_dict])
+@app.post("/predict")
+def predict_churn(user_input: InputData):
+    df = pd.DataFrame([user_input.model_dump()])
 
     prob = pipeline.predict_proba(df)[0][1]
     prediction = int(prob >= threshold)
 
-    prediction_row = ChurnPrediction(
-        customer_id = customer_id,
-        churn_probability = float(prob),
-        predicted_churn = prediction
-    )
-
-    db.add(prediction_row)
-    db.commit()
-
     return {
-            "customer_id": customer_id,
-            "probability": float(prob),
-            "prediction": prediction
-        }
+        "probability": float(prob),
+        "prediction": prediction
+    }
 
 
 @app.get("/top-risk")
